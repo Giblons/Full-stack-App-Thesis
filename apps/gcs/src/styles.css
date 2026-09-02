@@ -1,0 +1,213 @@
+:root {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  color: #e5e7eb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #0f172a;
+}
+
+.gcs {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  height: 100vh;
+}
+
+.panel {
+  background: #111827;
+  border-right: 1px solid #1f2937;
+  padding: 18px;
+  overflow-y: auto;
+}
+
+.brand h1 {
+  font-size: 18px;
+  margin: 0;
+}
+
+.link {
+  font-size: 12px;
+}
+
+.link.up {
+  color: #34d399;
+}
+
+.link.down {
+  color: #9ca3af;
+}
+
+.muted {
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+.telemetry,
+.controls,
+.mission {
+  background: #0b1220;
+  border: 1px solid #1f2937;
+  border-radius: 10px;
+  padding: 14px;
+  margin-top: 16px;
+}
+
+.drone-id {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+}
+
+.state {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #1f2937;
+  color: #93c5fd;
+}
+
+.state-in_flight {
+  color: #fbbf24;
+}
+.state-hold {
+  color: #f472b6;
+}
+.state-returning {
+  color: #fb7185;
+}
+.state-landed {
+  color: #34d399;
+}
+
+.battery {
+  margin-top: 14px;
+}
+
+.battery-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.battery-bar {
+  height: 10px;
+  background: #1f2937;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.battery-fill {
+  height: 100%;
+  transition: width 0.4s ease;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 14px 0 0;
+}
+
+.stat dt {
+  font-size: 11px;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.stat dd {
+  margin: 2px 0 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+h3 {
+  margin: 0 0 8px;
+  font-size: 14px;
+}
+
+.btn-row {
+  display: flex;
+  gap: 8px;
+}
+
+button {
+  flex: 1;
+  background: #1d4ed8;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #2563eb;
+}
+
+button.danger {
+  background: #b91c1c;
+}
+
+button.danger:hover {
+  background: #dc2626;
+}
+
+.follow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 13px;
+}
+
+.mock-note {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 0;
+}
+
+.map-wrap {
+  position: relative;
+}
+
+.map {
+  height: 100vh;
+  width: 100%;
+}
+
+.drone-marker {
+  font-size: 26px;
+  line-height: 32px;
+  text-align: center;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
+}
+
+.pin-marker {
+  width: 24px;
+  height: 24px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.pin-marker span {
+  transform: rotate(45deg);
+}
