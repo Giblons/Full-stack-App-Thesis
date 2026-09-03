@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { CreateOrderInput, Order, OrderStatus } from '@drone/shared';
-import { createOrder, listOrders } from './api.js';
+import { client } from './api.js';
 
 const DEMO_PICKUP = { lat: -6.9147, lng: 107.6098 }; // Bandung Alun-Alun
 const DEMO_DROPOFF = { lat: -6.8915, lng: 107.6107 }; // ITB campus area
@@ -24,7 +24,7 @@ export function App() {
 
   async function refresh() {
     try {
-      setOrders(await listOrders());
+      setOrders(await client.listOrders());
     } catch (err) {
       setError((err as Error).message);
     }
@@ -47,7 +47,7 @@ export function App() {
       dropoff,
     };
     try {
-      await createOrder(input);
+      await client.createOrder(input);
       await refresh();
     } catch (err) {
       setError((err as Error).message);
@@ -61,6 +61,11 @@ export function App() {
       <header>
         <h1>🚁 Drone Delivery</h1>
         <p className="subtitle">Book a package delivery. Ugly but it works.</p>
+        <span className={`mode mode-${client.mode}`}>
+          {client.mode === 'demo'
+            ? 'Demo mode — runs entirely in your browser'
+            : 'Live — connected to API'}
+        </span>
       </header>
 
       <form className="card" onSubmit={onSubmit}>
@@ -96,11 +101,7 @@ export function App() {
         </button>
         {error && <p className="error">{error}</p>}
         <p className="hint">
-          Watch the flight live in the GCS at{' '}
-          <a href="http://localhost:5174" target="_blank" rel="noreferrer">
-            localhost:5174
-          </a>
-          .
+          Watch the flight in the Ground Control Station (the GCS app).
         </p>
       </form>
 

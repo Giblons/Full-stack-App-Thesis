@@ -12,26 +12,41 @@ body {
   background: #0f172a;
 }
 
+/* Mobile-first: stacked layout — telemetry panel on top, map below. */
 .gcs {
-  display: grid;
-  grid-template-columns: 340px 1fr;
-  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 .panel {
   background: #111827;
-  border-right: 1px solid #1f2937;
-  padding: 18px;
-  overflow-y: auto;
+  border-bottom: 1px solid #1f2937;
+  padding: 16px;
+}
+
+.brand {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
 }
 
 .brand h1 {
-  font-size: 18px;
+  font-size: clamp(16px, 5vw, 20px);
   margin: 0;
+}
+
+.brand-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
 }
 
 .link {
   font-size: 12px;
+  white-space: nowrap;
 }
 
 .link.up {
@@ -40,6 +55,22 @@ body {
 
 .link.down {
   color: #9ca3af;
+}
+
+.mode {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #1e3a8a;
+  color: #bfdbfe;
+}
+
+.mode-demo {
+  background: #78350f;
+  color: #fed7aa;
 }
 
 .muted {
@@ -54,7 +85,7 @@ body {
   border: 1px solid #1f2937;
   border-radius: 10px;
   padding: 14px;
-  margin-top: 16px;
+  margin-top: 14px;
 }
 
 .drone-id {
@@ -146,10 +177,11 @@ button {
   color: #fff;
   border: none;
   border-radius: 8px;
-  padding: 8px 10px;
-  font-size: 13px;
+  padding: 12px 10px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
+  min-height: 44px;
 }
 
 button:hover {
@@ -180,11 +212,35 @@ button.danger:hover {
 
 .map-wrap {
   position: relative;
+  flex: 1;
 }
 
+/* On phones the map takes a tall-but-bounded slice so the panel is reachable. */
 .map {
-  height: 100vh;
+  height: 60vh;
+  min-height: 320px;
   width: 100%;
+}
+
+/* Tablet and up: two-pane, full-height GCS like a desktop console. */
+@media (min-width: 768px) {
+  .gcs {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    height: 100vh;
+    min-height: 0;
+  }
+
+  .panel {
+    border-bottom: none;
+    border-right: 1px solid #1f2937;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .map {
+    height: 100vh;
+  }
 }
 
 .drone-marker {

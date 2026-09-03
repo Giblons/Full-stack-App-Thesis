@@ -8,10 +8,24 @@ import { telemetryRoutes } from './routes/telemetry.js';
 const PORT = Number(process.env.PORT ?? 4000);
 const HOST = process.env.HOST ?? '0.0.0.0';
 
+/**
+ * CORS origins. Set CORS_ORIGIN to a comma-separated allowlist of the hosted
+ * frontend URLs in production (e.g. "https://customer.example,https://gcs.example").
+ * When unset we reflect any origin, which is convenient for local dev / demos.
+ */
+function corsOrigin(): true | string[] {
+  const raw = process.env.CORS_ORIGIN?.trim();
+  if (!raw) return true;
+  return raw
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
 async function main(): Promise<void> {
   const app = Fastify({ logger: true });
 
-  await app.register(cors, { origin: true });
+  await app.register(cors, { origin: corsOrigin() });
 
   app.get('/health', async () => ({ status: 'ok', time: new Date().toISOString() }));
 

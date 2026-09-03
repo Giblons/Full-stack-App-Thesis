@@ -1,4 +1,10 @@
 import { EventEmitter } from 'node:events';
+import {
+  SIM,
+  bearingDegrees,
+  pathLengthMeters,
+  pointAlongPath,
+} from '@drone/shared';
 import type {
   DroneCommand,
   DroneState,
@@ -6,12 +12,11 @@ import type {
   Mission,
 } from '@drone/shared';
 import type { DroneAdapter } from './adapter.js';
-import { bearingDegrees, pathLengthMeters, pointAlongPath } from '../geo.js';
 
-const TICK_MS = 500;
-const CRUISE_SPEED_MPS = 12; // ~43 km/h, a plausible delivery-drone cruise
-const CRUISE_ALTITUDE_M = 60;
-const BATTERY_DRAIN_PER_SEC = 0.15; // %/s while flying
+const TICK_MS = SIM.TICK_MS;
+const CRUISE_SPEED_MPS = SIM.CRUISE_SPEED_MPS;
+const CRUISE_ALTITUDE_M = SIM.CRUISE_ALTITUDE_M;
+const BATTERY_DRAIN_PER_SEC = SIM.BATTERY_DRAIN_PER_SEC;
 
 /**
  * A fake drone that flies the mission polyline from pickup to dropoff so the

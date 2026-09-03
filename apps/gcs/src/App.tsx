@@ -5,12 +5,7 @@ import type {
   Order,
   TelemetryEvent,
 } from '@drone/shared';
-import {
-  listMissions,
-  listOrders,
-  openTelemetryStream,
-  sendCommand,
-} from './api.js';
+import { client } from './api.js';
 import { MissionMap } from './MissionMap.js';
 
 export function App() {
@@ -21,10 +16,10 @@ export function App() {
   const [follow, setFollow] = useState(true);
 
   useEffect(() => {
-    listMissions().then(setMissions).catch(() => undefined);
-    listOrders().then(setOrders).catch(() => undefined);
+    client.listMissions().then(setMissions).catch(() => undefined);
+    client.listOrders().then(setOrders).catch(() => undefined);
 
-    const close = openTelemetryStream((event: TelemetryEvent) => {
+    const close = client.subscribe((event: TelemetryEvent) => {
       setConnected(true);
       if (event.type === 'telemetry') {
         setTelemetry(event.data);
@@ -56,9 +51,14 @@ export function App() {
       <aside className="panel">
         <div className="brand">
           <h1>Ground Control Station</h1>
-          <span className={`link ${connected ? 'up' : 'down'}`}>
-            {connected ? '● telemetry live' : '○ connecting…'}
-          </span>
+          <div className="brand-status">
+            <span className={`link ${connected ? 'up' : 'down'}`}>
+              {connected ? '● telemetry live' : '○ connecting…'}
+            </span>
+            <span className={`mode mode-${client.mode}`}>
+              {client.mode === 'demo' ? 'demo' : 'live'}
+            </span>
+          </div>
         </div>
 
         <TelemetryPanel telemetry={telemetry} />
@@ -66,9 +66,9 @@ export function App() {
         <div className="controls">
           <h3>Flight commands</h3>
           <div className="btn-row">
-            <button onClick={() => sendCommand('hold')}>Hold</button>
-            <button onClick={() => sendCommand('resume')}>Resume</button>
-            <button className="danger" onClick={() => sendCommand('rtl')}>
+            <button onClick={() => client.sendCommand('hold')}>Hold</button>
+            <button onClick={() => client.sendCommand('resume')}>Resume</button>
+            <button className="danger" onClick={() => client.sendCommand('rtl')}>
               RTL
             </button>
           </div>

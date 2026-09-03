@@ -96,3 +96,6 @@ export type TelemetryEvent =
 
 /** Default demo coordinates (Bandung, Indonesia) used to seed the map view. */
 export const DEFAULT_MAP_CENTER: LatLng = { lat: -6.9147, lng: 107.6098 };
+
+export * from './geo.js';
+export * from './sim.js';

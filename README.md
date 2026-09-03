@@ -116,8 +116,61 @@ services in containers (`docker compose up`), for environments where that's pref
 
 ### Configuration
 
-Both frontends default to `http://localhost:4000` for the API. Override with a
-`VITE_API_BASE` env var if you host the API elsewhere.
+- **`VITE_API_URL`** (frontends, build/dev time) — base URL of the hosted API,
+  e.g. `https://drone-api.onrender.com`. When **unset**:
+  - in `vite dev` the apps use `http://localhost:4000` (local API);
+  - in a **static production build** the apps fall back to **demo mode** (see below).
+  - (`VITE_API_BASE` is still accepted as a legacy alias.)
+- **`CORS_ORIGIN`** (API) — comma-separated allowlist of frontend origins in
+  production, e.g. `https://customer.example,https://gcs.example`. Unset = allow all.
+- **`HOST` / `PORT`** (API) — default `0.0.0.0` / `4000`, so the API is reachable
+  from other devices, not just localhost.
+
+The dev servers already bind `0.0.0.0`, so on your LAN you can open the apps from a
+phone at `http://<your-laptop-ip>:5173` / `:5174`.
+
+---
+
+## Responsive / mobile
+
+Both apps work on phone, tablet, and desktop — no laptop localhost required:
+
+- **Customer** is mobile-first (single column, full-width controls, 16px inputs so iOS
+  doesn't zoom) and is an installable **PWA** (Add to Home Screen).
+- **GCS** stacks **telemetry-then-map** on phones and switches to a full-height
+  **two-pane** console at ≥ 768px (tablet/desktop).
+
+---
+
+## Demo mode (no backend)
+
+So the apps are usable anywhere — even hosted as pure static files — they include an
+in-browser **demo backend** (`packages/shared/src/demo.ts`) that runs the same mock
+drone in the browser and persists to `localStorage`. When the customer app and GCS are
+served from the **same origin**, they share `localStorage`, so an order booked in the
+customer app shows up as a live drone in the GCS with no server at all. Demo mode is
+used automatically for a static build when `VITE_API_URL` is not set. A badge in each
+app shows whether it's running **live** (real API) or **demo**.
+
+---
+
+## Deploy it publicly
+
+Pick whichever host you have an account for. In all cases the frontends need
+`VITE_API_URL` pointing at the public API, and the API needs `CORS_ORIGIN` set to the
+frontends' URLs.
+
+- **GitHub Pages (static demo, zero backend)** — [`.github/workflows/pages.yml`](.github/workflows/pages.yml)
+  builds both apps into one site (`/customer/`, `/gcs/`) and deploys it. Because it's a
+  single origin, demo mode links the two apps. Build locally with
+  `PAGES_BASE=/<repo> npm run build:pages` (output in `site/`), or preview with
+  `npm run preview:pages`.
+- **Render (real API + two static sites, durable URLs)** — [`render.yaml`](render.yaml)
+  is a Blueprint: it creates the Docker API service and both static frontends. After the
+  API is live, set each frontend's `VITE_API_URL` to the API URL and redeploy.
+- **Docker (self-host, binds 0.0.0.0)** — [`docker-compose.prod.yml`](docker-compose.prod.yml)
+  builds [`Dockerfile.api`](Dockerfile.api) + [`Dockerfile.web`](Dockerfile.web):
+  `VITE_API_URL=https://api.example CORS_ORIGIN=https://customer.example,https://gcs.example docker compose -f docker-compose.prod.yml up --build`.
 
 ---
 
@@ -139,12 +192,20 @@ Full walkthrough: [`docs/px4-sitl.md`](docs/px4-sitl.md).
 
 ```
 apps/
-  customer/     book-and-track web UI
+  customer/     book-and-track web UI (mobile-first, PWA)
   gcs/          web Ground Control Station (map + telemetry + controls)
 services/
   api/          orders + mission dispatch + telemetry stream + drone adapter
 packages/
-  shared/       shared domain types (Order, Mission, DroneTelemetry, …)
+  shared/       shared domain types + geo + demo backend + DeliveryClient
 docs/
   px4-sitl.md   how PX4 SITL + MAVSDK/MAVLink will plug in
+scripts/
+  build-pages.mjs   assembles both apps into one static site for GitHub Pages
+.github/workflows/
+  pages.yml     GitHub Pages deploy of the static demo
+render.yaml               Render Blueprint (API + two static sites)
+Dockerfile.api            production API image (binds 0.0.0.0)
+Dockerfile.web            production static frontend image
+docker-compose.prod.yml   production stack
 ```

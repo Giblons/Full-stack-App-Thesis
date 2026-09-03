@@ -1,4 +1,4 @@
-import type { LatLng } from '@drone/shared';
+import type { LatLng } from './index.js';
 
 const EARTH_RADIUS_M = 6_371_000;
 
