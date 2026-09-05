@@ -1,0 +1,85 @@
+name: Deploy demo to GitHub Pages
+
+# Publishes a static, in-browser demo (mock drone — no API server) of the
+# customer app + GCS to GitHub Pages so it can be opened on any phone/tablet.
+#
+# GitHub Pages must be enabled once by a repo admin (Settings -> Pages ->
+# Build and deployment -> Source: "GitHub Actions"). Until then, this workflow
+# still validates that the static site builds and simply skips the deploy —
+# it does NOT fail. Once Pages is enabled it deploys automatically.
+
+on:
+  push:
+    branches:
+      - main
+      - cursor/drone-delivery-thin-slice-52fe
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      pages-enabled: ${{ steps.check.outputs.enabled }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      # Detect whether Pages is enabled. The API returns 404 until a repo admin
+      # turns Pages on, and the default token cannot enable it automatically, so
+      # we branch on this instead of letting configure-pages hard-fail the check.
+      - name: Check whether GitHub Pages is enabled
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh api "repos/${{ github.repository }}/pages" >/dev/null 2>&1; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+            echo "GitHub Pages is enabled — the site will be deployed."
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=GitHub Pages not enabled::Skipping deploy. Enable it in Settings -> Pages -> Build and deployment -> Source: 'GitHub Actions', then re-run this workflow to publish the demo."
+          fi
+
+      - name: Configure Pages
+        id: pages
+        if: steps.check.outputs.enabled == 'true'
+        uses: actions/configure-pages@v5
+
+      # Always build the static site so this job is a meaningful CI check even
+      # when Pages is not enabled yet. base_path falls back to the project-site
+      # path when configure-pages has not run.
+      - name: Build combined site
+        env:
+          PAGES_BASE: ${{ steps.pages.outputs.base_path || '/Full-stack-App-Thesis' }}
+        run: npm run build:pages
+
+      - name: Upload Pages artifact
+        if: steps.check.outputs.enabled == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    if: needs.build.outputs.pages-enabled == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,19 @@
+{
+  "name": "Drone Delivery",
+  "short_name": "Delivery",
+  "description": "Book and track autonomous drone package deliveries.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f4f5fb",
+  "theme_color": "#4338ca",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+# Render.com Blueprint — one durable deploy of the whole stack with public URLs.
+#
+# Use it: push this repo to GitHub, then in Render click "New +" -> "Blueprint",
+# pick this repo. Render creates the API (Docker web service) and both frontends
+# (static sites). After the API is live, set each static site's VITE_API_URL to
+# the API's public URL (e.g. https://drone-api.onrender.com) and redeploy, and
+# set the API's CORS_ORIGIN to the two static site URLs.
+#
+# (Vite inlines VITE_API_URL at build time, hence the manual step.)
+
+services:
+  - type: web
+    name: drone-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile.api
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: "4000"
+      # Comma-separated frontend origins once you know them, or "*" to allow all.
+      - key: CORS_ORIGIN
+        value: "*"
+
+  - type: web
+    name: drone-customer
+    runtime: static
+    buildCommand: npm ci && npm run build:shared && npm run build --workspace @drone/customer
+    staticPublishPath: apps/customer/dist
+    envVars:
+      - key: VITE_API_URL
+        sync: false # set to the drone-api URL in the Render dashboard, then redeploy
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+  - type: web
+    name: drone-gcs
+    runtime: static
+    buildCommand: npm ci && npm run build:shared && npm run build --workspace @drone/gcs
+    staticPublishPath: apps/gcs/dist
+    envVars:
+      - key: VITE_API_URL
+        sync: false # set to the drone-api URL in the Render dashboard, then redeploy
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

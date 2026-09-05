@@ -1,0 +1,269 @@
+:root {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  color: #e5e7eb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #0f172a;
+}
+
+/* Mobile-first: stacked layout — telemetry panel on top, map below. */
+.gcs {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.panel {
+  background: #111827;
+  border-bottom: 1px solid #1f2937;
+  padding: 16px;
+}
+
+.brand {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.brand h1 {
+  font-size: clamp(16px, 5vw, 20px);
+  margin: 0;
+}
+
+.brand-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.link {
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.link.up {
+  color: #34d399;
+}
+
+.link.down {
+  color: #9ca3af;
+}
+
+.mode {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #1e3a8a;
+  color: #bfdbfe;
+}
+
+.mode-demo {
+  background: #78350f;
+  color: #fed7aa;
+}
+
+.muted {
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+.telemetry,
+.controls,
+.mission {
+  background: #0b1220;
+  border: 1px solid #1f2937;
+  border-radius: 10px;
+  padding: 14px;
+  margin-top: 14px;
+}
+
+.drone-id {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+}
+
+.state {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #1f2937;
+  color: #93c5fd;
+}
+
+.state-in_flight {
+  color: #fbbf24;
+}
+.state-hold {
+  color: #f472b6;
+}
+.state-returning {
+  color: #fb7185;
+}
+.state-landed {
+  color: #34d399;
+}
+
+.battery {
+  margin-top: 14px;
+}
+
+.battery-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.battery-bar {
+  height: 10px;
+  background: #1f2937;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.battery-fill {
+  height: 100%;
+  transition: width 0.4s ease;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 14px 0 0;
+}
+
+.stat dt {
+  font-size: 11px;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.stat dd {
+  margin: 2px 0 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+h3 {
+  margin: 0 0 8px;
+  font-size: 14px;
+}
+
+.btn-row {
+  display: flex;
+  gap: 8px;
+}
+
+button {
+  flex: 1;
+  background: #1d4ed8;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+button:hover {
+  background: #2563eb;
+}
+
+button.danger {
+  background: #b91c1c;
+}
+
+button.danger:hover {
+  background: #dc2626;
+}
+
+.follow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 13px;
+}
+
+.mock-note {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 0;
+}
+
+.map-wrap {
+  position: relative;
+  flex: 1;
+}
+
+/* On phones the map takes a tall-but-bounded slice so the panel is reachable. */
+.map {
+  height: 60vh;
+  min-height: 320px;
+  width: 100%;
+}
+
+/* Tablet and up: two-pane, full-height GCS like a desktop console. */
+@media (min-width: 768px) {
+  .gcs {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    height: 100vh;
+    min-height: 0;
+  }
+
+  .panel {
+    border-bottom: none;
+    border-right: 1px solid #1f2937;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .map {
+    height: 100vh;
+  }
+}
+
+.drone-marker {
+  font-size: 26px;
+  line-height: 32px;
+  text-align: center;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
+}
+
+.pin-marker {
+  width: 24px;
+  height: 24px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.pin-marker span {
+  transform: rotate(45deg);
+}
