@@ -1,8 +1,14 @@
 # PX4 SITL + MAVSDK/MAVLink integration plan
 
-This document describes how the **mock** drone in this repository will be replaced by a
-real (simulated, then physical) drone. Nothing here is required to run the current thin
-slice — it flies a mock. This is the roadmap for making the flight real.
+This document describes how the **mock** drone in this repository is replaced by a
+real (simulated, then physical) drone. Nothing here is required to run the thin
+slice — it flies a mock by default.
+
+> **Status: implemented.** A real `Px4DroneAdapter`
+> (`services/api/src/drone/px4Adapter.ts`) now exists behind the `DroneAdapter`
+> interface, selected with `DRONE_ADAPTER=px4`. For the exact laptop steps to run PX4
+> SITL and verify it, see **[`px4-sitl-runbook.md`](px4-sitl-runbook.md)**. The rest of
+> this file is the design rationale.
 
 ## The seam: `DroneAdapter`
 
@@ -84,17 +90,20 @@ export class Px4DroneAdapter implements DroneAdapter {
 - `state` ← derived from `telemetry.flight_mode()` (`HOLD`→`hold`, `RETURN_TO_LAUNCH`→`returning`, etc.)
 - `missionProgress` ← from `mission.mission_progress()`
 
-## Step 3 — Flip the switch
+## Step 3 — Flip the switch (done)
 
-In `services/api/src/dispatch.ts`:
+Adapter selection lives in `services/api/src/drone/factory.ts` and is driven by the
+`DRONE_ADAPTER` env var (`mock` default, `px4` for real flight). The mock stays the
+default and is also used as an automatic **fallback** if PX4 SITL can't be reached, so
+demos/tests never break:
 
-```ts
-// const adapter = new MockDroneAdapter();
-const adapter = new Px4DroneAdapter(); // when SITL/MAVSDK is available
+```bash
+DRONE_ADAPTER=px4 npm run dev   # see docs/px4-sitl-runbook.md
 ```
 
-Optionally gate this on an env var (e.g. `DRONE_BACKEND=px4|mock`) so the mock stays the
-default for tests and demos.
+Note: this project implements the adapter with a thin MAVLink/UDP client
+(`node-mavlink`) rather than the gRPC `mavsdk_server`, so there's no extra binary to run
+— the same MAVLink actions described below are sent directly.
 
 ## Step 4 — Beyond SITL
 

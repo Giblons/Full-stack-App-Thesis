@@ -44,14 +44,14 @@ drone → one delivery, all visible in the GCS.**
 | API (orders → missions, telemetry fan-out) | **Real** | Fastify, in-memory store, SSE stream. |
 | GCS (map, drone marker, mission path, telemetry, controls) | **Real** | Vite + React + Leaflet, live SSE. |
 | Shared domain types | **Real** | `Order`, `Mission`, `DroneTelemetry`, … |
-| The drone itself | **Mock** | `MockDroneAdapter` flies the polyline at a constant cruise speed with linear battery drain. |
-| Flight commands (Hold/Resume/RTL) | **Mock** | They nudge the simulated drone; not yet MAVLink actions. |
+| The drone itself | **Mock (default)** | `MockDroneAdapter` flies the polyline at a constant cruise speed with linear battery drain. |
+| Real drone (PX4) | **Implemented, opt-in** | `Px4DroneAdapter` via `DRONE_ADAPTER=px4` connects to PX4 SITL over MAVLink; falls back to mock if SITL is down. |
+| Flight commands (Hold/Resume/RTL) | **Mock / real** | Nudge the mock by default; real `MAV_CMD_DO_PAUSE_CONTINUE` / `NAV_RETURN_TO_LAUNCH` with the PX4 adapter. |
 | Persistence | **Mock** | In-memory; restart clears all data. |
-| PX4 SITL / MAVSDK | **Not wired yet** | Interface is scaffolded — see [`docs/px4-sitl.md`](docs/px4-sitl.md). |
 
-The drone is hidden behind a `DroneAdapter` interface. Swapping the mock for a real
-PX4/MAVSDK-backed adapter is the main follow-up and does not touch the API routes or
-either frontend.
+The drone is hidden behind a `DroneAdapter` interface, so the mock and the PX4 adapter
+are interchangeable without touching the API routes or either frontend. Run the real one
+with `DRONE_ADAPTER=px4` — see [`docs/px4-sitl-runbook.md`](docs/px4-sitl-runbook.md).
 
 ---
 
@@ -125,6 +125,11 @@ services in containers (`docker compose up`), for environments where that's pref
   production, e.g. `https://customer.example,https://gcs.example`. Unset = allow all.
 - **`HOST` / `PORT`** (API) — default `0.0.0.0` / `4000`, so the API is reachable
   from other devices, not just localhost.
+- **`DRONE_ADAPTER`** (API) — `mock` (default) or `px4`. `px4` connects to PX4 SITL
+  over MAVLink; if SITL isn't reachable it falls back to the mock. Tuning:
+  `PX4_MAVLINK_URL` (default `udp://0.0.0.0:14540`), `PX4_MISSION_ALTITUDE` (m, default
+  `30`), `PX4_CONNECT_TIMEOUT_MS` (default `8000`). See
+  [`docs/px4-sitl-runbook.md`](docs/px4-sitl-runbook.md).
 
 The dev servers already bind `0.0.0.0`, so on your LAN you can open the apps from a
 phone at `http://<your-laptop-ip>:5173` / `:5174`.
@@ -174,17 +179,21 @@ frontends' URLs.
 
 ---
 
-## How PX4 SITL plugs in later
+## PX4 SITL (real drone)
 
-The whole point of the `DroneAdapter` interface is to make the mock removable. In short:
+The `DroneAdapter` interface makes the mock removable. A real **`Px4DroneAdapter`**
+(`services/api/src/drone/px4Adapter.ts`) is implemented with a thin MAVLink/UDP client
+(`node-mavlink` — no `mavsdk_server` binary). It connects to PX4 SITL, maps MAVLink
+telemetry into the shared `DroneTelemetry` type, uploads a pickup→dropoff mission
+(takeoff → waypoints → land) from an order, and sends Hold/Resume/RTL as MAVLink
+actions. Selected with `DRONE_ADAPTER=px4` (mock is the default and the fallback).
 
-1. Run PX4 SITL (e.g. `make px4_sitl gz_x500`) so a simulated vehicle exposes MAVLink.
-2. Implement `Px4DroneAdapter` (using **MAVSDK**) that uploads the mission as real
-   waypoints, arms/takes off, and translates MAVLink telemetry into `DroneTelemetry`.
-3. Map GCS commands (Hold/Resume/RTL) to MAVSDK `Action` calls.
-4. Swap which adapter `services/api` constructs — nothing else changes.
+```bash
+DRONE_ADAPTER=px4 npm run dev
+```
 
-Full walkthrough: [`docs/px4-sitl.md`](docs/px4-sitl.md).
+Exact laptop steps to run SITL and verify: **[`docs/px4-sitl-runbook.md`](docs/px4-sitl-runbook.md)**.
+Design rationale: [`docs/px4-sitl.md`](docs/px4-sitl.md).
 
 ---
 
