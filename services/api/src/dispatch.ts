@@ -8,16 +8,21 @@ import type {
 import { store } from './store.js';
 import { MockDroneAdapter } from './drone/mockAdapter.js';
 import type { DroneAdapter } from './drone/adapter.js';
+import { createDroneAdapter } from './drone/factory.js';
+
+export interface AdapterInfo {
+  adapter: 'mock' | 'px4';
+  droneId: string;
+}
 
 /**
  * Wires customer orders to a drone. Owns the (single) drone adapter and a
  * fan-out event bus that the SSE route uses to push updates to the GCS.
  */
 class DispatchService {
-  private readonly adapter: DroneAdapter = new MockDroneAdapter();
   private readonly bus = new EventEmitter();
 
-  constructor() {
+  constructor(private readonly adapter: DroneAdapter) {
     this.bus.setMaxListeners(100);
 
     this.adapter.onTelemetry((telemetry) => {
@@ -66,6 +71,10 @@ class DispatchService {
     return this.adapter.getTelemetry();
   }
 
+  adapterInfo(): AdapterInfo {
+    return { adapter: this.adapter.kind, droneId: this.adapter.droneId };
+  }
+
   /** Subscribe to the event bus. Returns an unsubscribe function. */
   subscribe(listener: (event: TelemetryEvent) => void): () => void {
     this.bus.on('event', listener);
@@ -94,4 +103,15 @@ class DispatchService {
   }
 }
 
-export const dispatch = new DispatchService();
+/**
+ * The active dispatch singleton. Assigned by `initDispatch()` during server
+ * bootstrap (after the adapter — mock or px4 — has been selected/connected).
+ * Exported as a live binding so routes see it once initialized.
+ */
+export let dispatch: DispatchService;
+
+export async function initDispatch(logger: Parameters<typeof createDroneAdapter>[0]): Promise<DispatchService> {
+  const adapter = await createDroneAdapter(logger);
+  dispatch = new DispatchService(adapter);
+  return dispatch;
+}

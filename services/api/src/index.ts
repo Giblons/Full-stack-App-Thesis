@@ -4,6 +4,7 @@ import { orderRoutes } from './routes/orders.js';
 import { missionRoutes } from './routes/missions.js';
 import { droneRoutes } from './routes/drone.js';
 import { telemetryRoutes } from './routes/telemetry.js';
+import { initDispatch } from './dispatch.js';
 
 const PORT = Number(process.env.PORT ?? 4000);
 const HOST = process.env.HOST ?? '0.0.0.0';
@@ -26,6 +27,14 @@ async function main(): Promise<void> {
   const app = Fastify({ logger: true });
 
   await app.register(cors, { origin: corsOrigin() });
+
+  // Select + connect the drone adapter (mock by default, or px4 via env) before
+  // serving so routes have a ready dispatch service.
+  await initDispatch({
+    info: (msg: string) => app.log.info(msg),
+    warn: (msg: string) => app.log.warn(msg),
+    error: (msg: string) => app.log.error(msg),
+  });
 
   app.get('/health', async () => ({ status: 'ok', time: new Date().toISOString() }));
 

@@ -27,6 +27,7 @@ const BATTERY_DRAIN_PER_SEC = SIM.BATTERY_DRAIN_PER_SEC;
  * up, replace this class with a MAVSDK-backed DroneAdapter (same interface).
  */
 export class MockDroneAdapter implements DroneAdapter {
+  readonly kind = 'mock' as const;
   readonly droneId: string;
 
   private readonly emitter = new EventEmitter();

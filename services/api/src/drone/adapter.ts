@@ -8,6 +8,9 @@ import type { DroneCommand, DroneTelemetry, Mission } from '@drone/shared';
  * See docs/px4-sitl.md for how the real adapter will plug in.
  */
 export interface DroneAdapter {
+  /** Which implementation this is, for diagnostics / the GCS HUD. */
+  readonly kind: 'mock' | 'px4';
+
   /** Stable identifier for the drone this adapter controls. */
   readonly droneId: string;
 

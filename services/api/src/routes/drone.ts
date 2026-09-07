@@ -5,6 +5,9 @@ import { dispatch } from '../dispatch.js';
 const VALID_COMMANDS: DroneCommand[] = ['hold', 'resume', 'rtl'];
 
 export async function droneRoutes(app: FastifyInstance): Promise<void> {
+  // Which backend is live (mock vs px4) — surfaced in the GCS HUD.
+  app.get('/drone/info', async () => dispatch.adapterInfo());
+
   // Current telemetry snapshot (handy for polling / debugging).
   app.get('/drone/telemetry', async () => dispatch.currentTelemetry());
 
