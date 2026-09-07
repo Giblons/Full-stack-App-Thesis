@@ -14,10 +14,21 @@ export function App() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [connected, setConnected] = useState(false);
   const [follow, setFollow] = useState(true);
+  const [backend, setBackend] = useState<{ adapter: string; droneId: string } | null>(
+    null,
+  );
 
   useEffect(() => {
     client.listMissions().then(setMissions).catch(() => undefined);
     client.listOrders().then(setOrders).catch(() => undefined);
+
+    // Surface which backend is live (mock vs PX4 SITL) in the HUD.
+    if (client.mode === 'live' && client.apiUrl) {
+      fetch(`${client.apiUrl}/drone/info`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((info) => info && setBackend(info))
+        .catch(() => undefined);
+    }
 
     const close = client.subscribe((event: TelemetryEvent) => {
       setConnected(true);
@@ -81,8 +92,11 @@ export function App() {
             Follow drone
           </label>
           <p className="mock-note">
-            Mock adapter — commands nudge the simulated drone. Wire PX4/MAVSDK
-            for real flight.
+            {client.mode === 'demo'
+              ? 'In-browser demo — commands nudge the simulated drone.'
+              : backend?.adapter === 'px4'
+                ? `Backend: PX4 SITL (${backend.droneId}) — Hold/Resume/RTL are real MAVLink actions.`
+                : 'Backend: mock adapter — commands nudge the simulated drone. Set DRONE_ADAPTER=px4 for real flight.'}
           </p>
         </div>
 
