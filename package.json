@@ -1,0 +1,31 @@
+{
+  "name": "drone-delivery-thesis",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Master's thesis product: a Gojek/Grab-style full-stack app for autonomous drone package delivery, with a web Ground Control Station (GCS).",
+  "author": "Muhammad Rizky Permana",
+  "license": "MIT",
+  "workspaces": [
+    "packages/*",
+    "services/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build:shared": "npm run build --workspace @drone/shared",
+    "dev": "npm run build:shared && concurrently -n api,customer,gcs -c green,cyan,magenta \"npm:dev:api\" \"npm:dev:customer\" \"npm:dev:gcs\"",
+    "dev:api": "npm run dev --workspace @drone/api",
+    "dev:customer": "npm run dev --workspace @drone/customer",
+    "dev:gcs": "npm run dev --workspace @drone/gcs",
+    "build": "npm run build:shared && npm run build --workspace @drone/api && npm run build --workspace @drone/customer && npm run build --workspace @drone/gcs",
+    "build:pages": "node scripts/build-pages.mjs",
+    "preview:pages": "npm run build:pages && npx --yes serve site -l 8080",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

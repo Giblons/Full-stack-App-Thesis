@@ -1,0 +1,38 @@
+# Convenience alternative to `npm run dev`. Runs the whole stack in containers:
+#
+#   docker compose up
+#
+# Then open the customer app at http://localhost:5173 and the GCS at
+# http://localhost:5174. The npm-scripts path (README) is the primary workflow;
+# this is here for environments where containers are preferred.
+
+services:
+  api:
+    build: .
+    command: npm run dev:api
+    environment:
+      - HOST=0.0.0.0
+      - PORT=4000
+    ports:
+      - "4000:4000"
+
+  customer:
+    build: .
+    command: npm run dev:customer
+    environment:
+      # The browser (on the host) reaches the API on localhost:4000.
+      - VITE_API_BASE=http://localhost:4000
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
+
+  gcs:
+    build: .
+    command: npm run dev:gcs
+    environment:
+      - VITE_API_BASE=http://localhost:4000
+    ports:
+      - "5174:5174"
+    depends_on:
+      - api

@@ -1,0 +1,45 @@
+# Production-style stack: API + two static frontends, all bound to 0.0.0.0.
+#
+#   docker compose -f docker-compose.prod.yml up --build
+#
+# IMPORTANT: Vite inlines VITE_API_URL at build time. The default below
+# (http://localhost:4000) only works when the browser runs on the same machine
+# as the API. To use this across devices, set VITE_API_URL to the API's public
+# URL (and set CORS_ORIGIN on the API to the frontends' public URLs), then rebuild.
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    environment:
+      - HOST=0.0.0.0
+      - PORT=4000
+      # Comma-separated allowlist of frontend origins, or leave unset to allow all.
+      - CORS_ORIGIN=${CORS_ORIGIN:-}
+    ports:
+      - "4000:4000"
+
+  customer:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+      args:
+        APP: customer
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:4000}
+    ports:
+      - "5173:8080"
+    depends_on:
+      - api
+
+  gcs:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+      args:
+        APP: gcs
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:4000}
+    ports:
+      - "5174:8080"
+    depends_on:
+      - api
